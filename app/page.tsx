@@ -1,5 +1,10 @@
-import { CalendarDashboard } from "@/components/calendar/calendar-dashboard";
+import { AppShell } from "@/components/dashboard/app-shell";
+import { DashboardHome } from "@/components/dashboard/dashboard-home";
 
 export default function Home() {
-  return <CalendarDashboard />;
+  return (
+    <AppShell activeNav="dashboard">
+      <DashboardHome />
+    </AppShell>
+  );
 }
