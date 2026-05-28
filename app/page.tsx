@@ -1,5 +1,5 @@
-import { CalendarDashboard } from "@/components/calendar/calendar-dashboard";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 
 export default function Home() {
-  return <CalendarDashboard />;
+  return <DashboardLayout />;
 }
