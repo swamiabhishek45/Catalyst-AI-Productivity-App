@@ -3,8 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Next.js Premium Startup Boilerplate",
-  description: "Created using the ultimate interactive Next.js stack generator CLI.",
+  title: "AI Productivity Calendar",
+  description: "Plan tasks and reminders in a modern calendar workspace.",
 };
 
 export default function RootLayout({
