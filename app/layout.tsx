@@ -3,9 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "CanvasDesk | AI Productivity Workspace",
-  description:
-    "A cozy productivity workspace for notes, tasks, whiteboards, calendars, and AI-assisted planning.",
+  title: "AI Productivity Calendar",
+  description: "Plan tasks and reminders in a modern calendar workspace.",
 };
 
 export default function RootLayout({
