@@ -1,5 +1,11 @@
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+
+import { AppShell } from "@/components/dashboard/app-shell";
+import { DashboardHome } from "@/components/dashboard/dashboard-home";
 
 export default function Home() {
-  return <DashboardLayout />;
+  return (
+    <AppShell activeNav="dashboard">
+      <DashboardHome />
+    </AppShell>
+  );
 }
