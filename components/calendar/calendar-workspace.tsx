@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Bell,
   CalendarDays,
@@ -12,6 +12,8 @@ import {
   ListPlus,
   Plus,
   X,
+  Sparkles,
+  Trello,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,20 @@ type CalendarItem = {
   time: string;
   type: ItemType;
   category: CategoryId;
+};
+
+type KanbanTask = {
+  id: string;
+  boardId: string;
+  columnId: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  priority: "low" | "medium" | "high";
+  labels: string[];
+  syncToCalendar: boolean;
+  linkToNotes: boolean;
+  createdAt: number;
 };
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -178,18 +194,63 @@ export function CalendarWorkspace() {
   const todayKey = toDateKey(today);
   const [activeDate, setActiveDate] = useState(today);
   const [view, setView] = useState<CalendarView>("month");
-  const [items, setItems] = useState<CalendarItem[]>(() =>
-    createStarterItems(today),
-  );
+  const [items, setItems] = useState<CalendarItem[]>([]);
+  const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
   const [dialogItem, setDialogItem] = useState<CalendarItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedCal = localStorage.getItem("canvasdesk_calendar_items");
+    if (savedCal) {
+      setItems(JSON.parse(savedCal));
+    } else {
+      const starter = createStarterItems(today);
+      setItems(starter);
+      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(starter));
+    }
+
+    const savedKanban = localStorage.getItem("canvasdesk_kanban_tasks");
+    if (savedKanban) {
+      setKanbanTasks(JSON.parse(savedKanban));
+    }
+  }, [today]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const t = setTimeout(() => setToastMessage(null), 3500);
+      return () => clearTimeout(t);
+    }
+  }, [toastMessage]);
+
+  const combinedItems = useMemo(() => {
+    const syncedKanban = kanbanTasks
+      .filter((t) => t.syncToCalendar && t.dueDate)
+      .map((t) => {
+        let cat: CategoryId = "work";
+        if (t.priority === "high") cat = "wellness";
+        else if (t.priority === "low") cat = "focus";
+
+        return {
+          id: `kanban-${t.id}`,
+          title: t.title,
+          notes: t.description || "",
+          date: t.dueDate,
+          time: "09:00",
+          type: "task" as const,
+          category: cat,
+          isKanban: true,
+        };
+      });
+    return [...items, ...syncedKanban];
+  }, [items, kanbanTasks]);
 
   const visibleDays = useMemo(
     () => (view === "month" ? getMonthDays(activeDate) : getWeekDays(activeDate)),
     [activeDate, view],
   );
 
-  const scheduledItems = items.filter((item) => item.date);
-  const draftItems = items.filter((item) => !item.date);
+  const scheduledItems = useMemo(() => combinedItems.filter((item) => item.date), [combinedItems]);
+  const draftItems = useMemo(() => combinedItems.filter((item) => !item.date), [combinedItems]);
 
   const movePeriod = (direction: -1 | 1) => {
     setActiveDate((current) => {
@@ -203,7 +264,11 @@ export function CalendarWorkspace() {
     });
   };
 
-  const openDialog = (date: string | null, item?: CalendarItem) => {
+  const openDialog = (date: string | null, item?: CalendarItem & { isKanban?: boolean }) => {
+    if (item && item.isKanban) {
+      setToastMessage("This is a synced Kanban task. Go to the Kanban Board to edit details.");
+      return;
+    }
     setDialogItem(item ?? emptyForm(date));
   };
 
@@ -222,17 +287,36 @@ export function CalendarWorkspace() {
 
     setItems((current) => {
       const exists = current.some((entry) => entry.id === normalized.id);
-      return exists
+      const updated = exists
         ? current.map((entry) => (entry.id === normalized.id ? normalized : entry))
         : [...current, normalized];
+      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(updated));
+      return updated;
     });
     setDialogItem(null);
   };
 
   const moveItemToDate = (itemId: string, date: string | null) => {
-    setItems((current) =>
-      current.map((item) => (item.id === itemId ? { ...item, date } : item)),
-    );
+    if (itemId.startsWith("kanban-")) {
+      const realId = itemId.replace("kanban-", "");
+      const updatedKanban = kanbanTasks.map((t) =>
+        t.id === realId ? { ...t, dueDate: date || "" } : t
+      );
+      setKanbanTasks(updatedKanban);
+      localStorage.setItem("canvasdesk_kanban_tasks", JSON.stringify(updatedKanban));
+      
+      const movedTask = kanbanTasks.find((t) => t.id === realId);
+      if (movedTask) {
+        setToastMessage(`Updated board task "${movedTask.title}" due date to ${date}.`);
+      }
+      return;
+    }
+
+    setItems((current) => {
+      const updated = current.map((item) => (item.id === itemId ? { ...item, date } : item));
+      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const dayItems = (date: Date) =>
@@ -242,6 +326,12 @@ export function CalendarWorkspace() {
 
   return (
     <>
+      {toastMessage && (
+        <div className="fixed right-5 top-5 z-50 flex items-center gap-2 rounded-lg border border-primary/20 bg-card px-4 py-3 text-sm font-medium text-foreground shadow-lg animate-in slide-in-from-top duration-300">
+          <Sparkles className="size-4 text-primary animate-pulse" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
       <header className="flex flex-col gap-4 border-b border-border bg-background/85 px-5 py-4 backdrop-blur md:flex-row md:items-center md:justify-between md:px-8">
         <div>
           <p className="flex items-center gap-2 text-sm font-medium text-primary">
@@ -474,7 +564,7 @@ function CalendarTask({
   item,
   onOpen,
 }: {
-  item: CalendarItem;
+  item: CalendarItem & { isKanban?: boolean };
   onOpen: () => void;
 }) {
   const category = categories[item.category];
@@ -485,8 +575,9 @@ function CalendarTask({
       type="button"
       className={cn(
         "min-w-0 rounded-md border px-2 py-1.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5",
-        category.chip,
-        category.border,
+        item.isKanban
+          ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100/70"
+          : cn(category.chip, category.border)
       )}
       onClick={(event) => {
         event.stopPropagation();
@@ -498,7 +589,9 @@ function CalendarTask({
       }}
     >
       <span className="flex min-w-0 items-center gap-1.5">
-        {item.type === "reminder" ? (
+        {item.isKanban ? (
+          <Trello className="size-3.5 shrink-0 text-orange-500" />
+        ) : item.type === "reminder" ? (
           <Bell className="size-3.5 shrink-0" />
         ) : (
           <GripVertical className="size-3.5 shrink-0" />
