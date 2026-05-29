@@ -20,7 +20,7 @@ import {
 
 import { cn } from "@/lib/utils";
 
-type ActiveNav = "dashboard" | "calendar";
+type ActiveNav = "dashboard" | "calendar" | "kanban";
 
 type NavItem = {
   id?: ActiveNav;
@@ -49,7 +49,13 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         color: "text-emerald-500",
         href: "/calendar",
       },
-      { label: "Task / Kanban", icon: Trello, color: "text-orange-500" },
+      {
+        id: "kanban",
+        label: "Task / Kanban",
+        icon: Trello,
+        color: "text-orange-500",
+        href: "/kanban",
+      },
     ],
   },
   {
