@@ -55,3 +55,19 @@ export type NewBoardShare = typeof boardShares.$inferInsert;
 export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
 
+export const aiTemplates = pgTable("ai_templates", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  appName: text("app_name").notNull(),
+  description: text("description"),
+  icon: text("icon").notNull().default("Flame"),
+  color: text("color").notNull().default("#F97316"),
+  layout: text("layout").notNull().default("single-page"),
+  config: text("config").notNull(),
+  inSidebar: boolean("in_sidebar").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type AITemplate = typeof aiTemplates.$inferSelect;
+export type NewAITemplate = typeof aiTemplates.$inferInsert;
