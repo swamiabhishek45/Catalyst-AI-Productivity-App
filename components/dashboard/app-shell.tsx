@@ -20,7 +20,7 @@ import {
 
 import { cn } from "@/lib/utils";
 
-type ActiveNav = "dashboard" | "calendar" | "kanban" | "notes" | "whiteboard";
+type ActiveNav = "dashboard" | "calendar" | "kanban" | "notes" | "whiteboard" | "spaces";
 
 type NavItem = {
   id?: ActiveNav;
@@ -63,7 +63,13 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     items: [
       { id: "notes", label: "Notes", icon: NotebookPen, color: "text-rose-500", href: "/notes" },
       { id: "whiteboard", label: "Whiteboard", icon: PenTool, color: "text-cyan-500", href: "/whiteboard" },
-      { label: "Pages / Spaces", icon: StickyNote, color: "text-amber-500" },
+      {
+        id: "spaces",
+        label: "Pages / Spaces",
+        icon: StickyNote,
+        color: "text-amber-500",
+        href: "/spaces",
+      },
       {
         label: "AI Template Builder",
         icon: LayoutTemplate,
