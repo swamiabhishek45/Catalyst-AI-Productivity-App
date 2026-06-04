@@ -65,7 +65,13 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     items: [
       { id: "notes", label: "Notes", icon: NotebookPen, color: "text-rose-500", href: "/notes" },
       { id: "whiteboard", label: "Whiteboard", icon: PenTool, color: "text-cyan-500", href: "/whiteboard" },
-      { label: "Pages / Spaces", icon: StickyNote, color: "text-amber-500" },
+      {
+        id: "spaces",
+        label: "Pages / Spaces",
+        icon: StickyNote,
+        color: "text-amber-500",
+        href: "/spaces",
+      },
       {
         id: "template-builder",
         label: "AI Template Builder",
