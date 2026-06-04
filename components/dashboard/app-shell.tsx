@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   Bot,
   CalendarDays,
@@ -16,11 +16,13 @@ import {
   StickyNote,
   Trello,
   UsersRound,
+  X,
 } from "lucide-react";
+import * as Icons from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type ActiveNav = "dashboard" | "calendar" | "kanban" | "notes" | "whiteboard" | "spaces";
+type ActiveNav = "dashboard" | "calendar" | "kanban" | "notes" | "whiteboard" | "template-builder" | string;
 
 type NavItem = {
   id?: ActiveNav;
@@ -71,9 +73,11 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         href: "/spaces",
       },
       {
+        id: "template-builder",
         label: "AI Template Builder",
         icon: LayoutTemplate,
         color: "text-fuchsia-500",
+        href: "/template-builder",
       },
     ],
   },
@@ -83,6 +87,11 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
   },
 ];
 
+function getLucideIcon(iconName: string) {
+  const IconComponent = (Icons as any)[iconName] || Icons.LayoutTemplate;
+  return IconComponent;
+}
+
 export function AppShell({
   activeNav,
   children,
@@ -91,6 +100,44 @@ export function AppShell({
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarApps, setSidebarApps] = useState<Array<{ id: string; appName: string; icon: string; color: string }>>([]);
+
+  const fetchSidebarApps = async () => {
+    try {
+      const res = await fetch("/api/template-builder/sidebar");
+      if (res.ok) {
+        const data = await res.json();
+        setSidebarApps(data.apps || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch sidebar apps:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSidebarApps();
+    window.addEventListener("sidebar-updated", fetchSidebarApps);
+    return () => {
+      window.removeEventListener("sidebar-updated", fetchSidebarApps);
+    };
+  }, []);
+
+  const handleRemoveFromSidebar = async (appId: string) => {
+    try {
+      const res = await fetch(`/api/template-builder/${appId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inSidebar: false }),
+      });
+      if (res.ok) {
+        fetchSidebarApps();
+        // Dispatch to sync dashboard components
+        window.dispatchEvent(new Event("sidebar-updated"));
+      }
+    } catch (error) {
+      console.error("Failed to remove app from sidebar:", error);
+    }
+  };
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -193,6 +240,57 @@ export function AppShell({
                 </div>
               </div>
             ))}
+
+            {/* Dynamic Sidebar Apps */}
+            {sidebarApps.length > 0 && (
+              <div className="mt-2 border-t border-border/40 pt-4">
+                {!collapsed && (
+                  <p className="mb-1.5 px-2 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    My Apps
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {sidebarApps.map((app) => {
+                    const Icon = getLucideIcon(app.icon);
+                    const href = `/template-builder/${app.id}`;
+                    const isActive = activeNav === `app-${app.id}`;
+
+                    return (
+                      <div key={app.id} className="group relative flex items-center">
+                        <Link
+                          aria-current={isActive ? "page" : undefined}
+                          aria-label={app.appName}
+                          className={cn(
+                            "flex h-9 flex-1 items-center gap-2.5 rounded-md px-2 text-left text-[0.82rem] font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground",
+                            isActive && "bg-primary/8 text-foreground shadow-[inset_0_0_0_1px_rgba(44,123,229,0.12)]",
+                            collapsed && "justify-center px-0"
+                          )}
+                          href={href}
+                          title={collapsed ? app.appName : undefined}
+                        >
+                          <Icon className="size-4 shrink-0" style={{ color: app.color }} />
+                          {!collapsed && <span className="truncate pr-4">{app.appName}</span>}
+                        </Link>
+                        {!collapsed && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleRemoveFromSidebar(app.id);
+                            }}
+                            className="absolute right-2 size-5 hidden group-hover:flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+                            title="Remove from sidebar"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </nav>
 
           <div
