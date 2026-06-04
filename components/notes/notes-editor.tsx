@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -27,11 +27,13 @@ import {
   AlertTriangle,
   Smile,
   Palette,
-  Check
+  Check,
+  Mic
 } from "lucide-react";
 import { Note } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import { NoteIcon, NOTE_ICONS } from "./note-icon";
+import { useAssemblyAIStreaming } from "@/hooks/useAssemblyAIStreaming";
 
 const COLORS = [
   { name: "gray", label: "Neutral Gray", dot: "bg-slate-400" },
@@ -90,6 +92,8 @@ export function NotesEditor({
   const colorRef = useRef<HTMLDivElement | null>(null);
   const slashMenuRef = useRef<HTMLDivElement | null>(null);
   const aiRef = useRef<HTMLDivElement | null>(null);
+  const sttInsertStartRef = useRef<number | null>(null);
+  const sttLengthRef = useRef<number>(0);
 
   // Sync title input when note changes
   useEffect(() => {
@@ -231,6 +235,96 @@ export function NotesEditor({
     },
   });
 
+  // Handle Speech-to-Text finalized text insertion
+  const handleSTTFinalTranscript = useCallback((text: string) => {
+    if (!editor) return;
+
+    const start = sttInsertStartRef.current;
+    const prevLen = sttLengthRef.current;
+
+    if (start === null) return;
+
+    const trimmedText = text.trim();
+    if (!trimmedText) {
+      // Clear the temporary/interim text if empty
+      editor.chain().deleteRange({ from: start, to: start + prevLen }).run();
+      sttLengthRef.current = 0;
+      return;
+    }
+
+    // Replace the previous interim text range with the finalized text
+    editor.chain()
+      .deleteRange({ from: start, to: start + prevLen })
+      .insertContentAt(start, trimmedText)
+      .run();
+
+    // Advance the start position for the next turn
+    sttInsertStartRef.current = start + trimmedText.length;
+    sttLengthRef.current = 0;
+
+    // Trigger auto-save immediately with the updated HTML
+    onUpdateNote(note.id, { content: editor.getHTML() });
+  }, [editor, note.id, onUpdateNote]);
+
+  const {
+    isRecording,
+    isConnecting,
+    partialTranscript,
+    error: sttError,
+    startRecording,
+    stopRecording,
+  } = useAssemblyAIStreaming({
+    onFinalTranscript: handleSTTFinalTranscript,
+  });
+
+  // Track partial transcripts and update inline in real-time
+  useEffect(() => {
+    if (!editor || !isRecording) return;
+
+    const start = sttInsertStartRef.current;
+    const prevLen = sttLengthRef.current;
+    const textToInsert = partialTranscript;
+
+    if (start === null) return;
+
+    // Replace the previous partial transcript range
+    editor.chain()
+      .deleteRange({ from: start, to: start + prevLen })
+      .insertContentAt(start, textToInsert)
+      .run();
+
+    sttLengthRef.current = textToInsert.length;
+  }, [partialTranscript, editor, isRecording]);
+
+  const handleStartSTT = useCallback(async () => {
+    if (!editor) return;
+
+    // 1. Capture initial insert position
+    const isFocused = editor.isFocused;
+    let initialPos = isFocused ? editor.state.selection.from : editor.state.doc.content.size;
+
+    // 2. Check if we need to insert a space before the new text
+    let needsSpace = false;
+    if (initialPos > 1) {
+      try {
+        const charBefore = editor.state.doc.textBetween(initialPos - 1, initialPos);
+        needsSpace = charBefore !== "" && charBefore !== " " && charBefore !== "\n";
+      } catch (e) {}
+    }
+
+    if (needsSpace) {
+      editor.chain().insertContentAt(initialPos, " ").run();
+      initialPos += 1;
+    }
+
+    sttInsertStartRef.current = initialPos;
+    sttLengthRef.current = 0;
+
+    // 3. Start recording
+    await startRecording();
+  }, [editor, startRecording]);
+
+
   // Sync content when active note switches
   useEffect(() => {
     if (editor && note) {
@@ -331,6 +425,40 @@ export function NotesEditor({
 
         {/* Note Metadata Actions (Colors & Emojis) */}
         <div className="flex items-center gap-2">
+          {sttError && (
+            <span className="text-xs text-rose-500 font-medium flex items-center gap-1 bg-rose-50 border border-rose-100 px-2 py-1 rounded shadow-sm animate-in fade-in zoom-in-95 duration-200">
+              <AlertTriangle className="size-3 text-rose-500" />
+              <span className="max-w-[180px] truncate" title={sttError}>{sttError}</span>
+            </span>
+          )}
+          {/* Speak to Note Button */}
+          <button
+            onClick={isRecording ? stopRecording : handleStartSTT}
+            disabled={isConnecting}
+            className={cn(
+              "flex items-center gap-1.5 h-8 px-2.5 rounded-md text-xs font-semibold border transition-all duration-200 shadow-sm",
+              isRecording
+                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
+                : "hover:bg-slate-100 border-border bg-background text-slate-700",
+              isConnecting && "opacity-60 cursor-not-allowed"
+            )}
+            title={isRecording ? "Stop recording speech" : "Speak to Note (Speech-to-Text)"}
+          >
+            {isRecording ? (
+              <span className="relative flex h-2 w-2 mr-0.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              </span>
+            ) : (
+              <Mic className={cn("size-3.5 text-slate-500", isConnecting && "animate-pulse")} />
+            )}
+            <span>
+              {isConnecting ? "Connecting..." : isRecording ? "Listening..." : "Speak to Note"}
+            </span>
+          </button>
+
+          <span className="text-xs text-muted-foreground/30 border-l border-border h-4 mx-0.5" />
+
           {/* Theme Color Picker */}
           <div className="relative" ref={colorRef}>
             <button
@@ -688,3 +816,4 @@ export function NotesEditor({
     </div>
   );
 }
+

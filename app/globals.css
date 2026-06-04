@@ -124,8 +124,13 @@
 }
 
 /* Tiptap editor content styles */
-.tiptap {
-  outline: none;
+.tiptap,
+.tiptap .ProseMirror,
+.ProseMirror,
+.ProseMirror-focused {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
   min-height: 350px;
 }
 .tiptap p.is-editor-empty:first-child::before {
