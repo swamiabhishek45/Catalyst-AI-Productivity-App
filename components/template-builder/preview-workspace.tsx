@@ -644,9 +644,9 @@ export function TemplatePreviewWorkspace({ id }: PreviewWorkspaceProps) {
                           </table>
                         );
                       })}
-                    </div>
+                    </div>  
                   )}
-
+                  
                   {/* TYPE: FORM */}
                   {section.type === "form" && (
                     <div>

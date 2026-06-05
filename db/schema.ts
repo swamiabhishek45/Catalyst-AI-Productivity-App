@@ -71,3 +71,45 @@ export const aiTemplates = pgTable("ai_templates", {
 
 export type AITemplate = typeof aiTemplates.$inferSelect;
 export type NewAITemplate = typeof aiTemplates.$inferInsert;
+
+export const userSettings = pgTable("user_settings", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  theme: text("theme").notNull().default("system"),
+  notificationsEnabled: boolean("notifications_enabled").notNull().default(true),
+  defaultCalendarView: text("default_calendar_view").notNull().default("month"),
+  defaultTaskPriority: text("default_task_priority").notNull().default("medium"),
+  autoSaveEnabled: boolean("auto_save_enabled").notNull().default(true),
+  
+  // AI Settings
+  aiModel: text("ai_model").notNull().default("gemini-2.5-flash"),
+  aiBehavior: text("ai_behavior").notNull().default(""),
+  aiTone: text("ai_tone").notNull().default("cozy"),
+  aiFeatures: text("ai_features").notNull().default("refine,assistant,template"),
+  
+  // Subscription Info
+  subscriptionPlan: text("subscription_plan").notNull().default("Free Tier"),
+  subscriptionStatus: text("subscription_status").notNull().default("active"),
+  subscriptionRenewal: timestamp("subscription_renewal"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type UserSettings = typeof userSettings.$inferSelect;
+export type NewUserSettings = typeof userSettings.$inferInsert;
+
+export const categories = pgTable("categories", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // "calendar" | "kanban" | "notes" | "reminders"
+  color: text("color").notNull(), // hex color or tailwind class
+  icon: text("icon").notNull().default("Tag"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Category = typeof categories.$inferSelect;
+export type NewCategory = typeof categories.$inferInsert;
+
