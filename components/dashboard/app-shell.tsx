@@ -83,7 +83,15 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
   },
   {
     label: "System",
-    items: [{ label: "Settings", icon: Settings, color: "text-slate-500" }],
+    items: [
+      {
+        id: "settings",
+        label: "Settings",
+        icon: Settings,
+        color: "text-slate-500",
+        href: "/settings",
+      },
+    ],
   },
 ];
 
