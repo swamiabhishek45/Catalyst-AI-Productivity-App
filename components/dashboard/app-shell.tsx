@@ -43,7 +43,13 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         color: "text-sky-500",
         href: "/",
       },
-      { label: "AI Assistant", icon: Bot, color: "text-violet-500" },
+      {
+        id: "assistant",
+        label: "AI Assistant",
+        icon: Bot,
+        color: "text-violet-500",
+        href: "/assistant",
+      },
       {
         id: "calendar",
         label: "Calendar",
