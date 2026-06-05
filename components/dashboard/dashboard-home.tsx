@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   CalendarDays,
   NotebookPen,
@@ -11,10 +12,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const quickActions = [
-  { label: "New note", icon: NotebookPen, color: "bg-rose-100 text-rose-600" },
-  { label: "Plan sprint", icon: Trello, color: "bg-orange-100 text-orange-600" },
-  { label: "Map ideas", icon: PenTool, color: "bg-cyan-100 text-cyan-600" },
-  { label: "Ask AI", icon: Sparkles, color: "bg-violet-100 text-violet-600" },
+  { label: "New note", icon: NotebookPen, color: "bg-rose-100 text-rose-600", href: "/notes" },
+  { label: "Plan sprint", icon: Trello, color: "bg-orange-100 text-orange-600", href: "/kanban" },
+  { label: "Map ideas", icon: PenTool, color: "bg-cyan-100 text-cyan-600", href: "/whiteboard" },
+  { label: "Ask AI", icon: Sparkles, color: "bg-violet-100 text-violet-600", href: "/assistant" },
 ];
 
 const focusCards = [
@@ -85,10 +86,10 @@ export function DashboardHome() {
                   const Icon = action.icon;
 
                   return (
-                    <button
+                    <Link
                       key={action.label}
-                      type="button"
-                      className="flex h-20 min-w-[86px] flex-col items-center justify-center gap-2 rounded-md border border-border bg-background text-xs font-semibold transition hover:-translate-y-0.5 hover:shadow-sm"
+                      href={action.href}
+                      className="flex h-20 min-w-[86px] flex-col items-center justify-center gap-2 rounded-md border border-border bg-background text-xs font-semibold transition hover:-translate-y-0.5 hover:shadow-sm cursor-pointer"
                     >
                       <span
                         className={cn(
@@ -99,7 +100,7 @@ export function DashboardHome() {
                         <Icon className="size-4" />
                       </span>
                       {action.label}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -181,12 +182,14 @@ export function DashboardHome() {
               Summarize today&apos;s notes and turn loose ideas into a launch
               checklist.
             </div>
-            <button
-              type="button"
-              className="mt-3 h-9 w-full rounded-md bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-            >
-              Generate plan
-            </button>
+            <Link href="/assistant" className="block w-full">
+              <button
+                type="button"
+                className="mt-3 h-9 w-full rounded-md bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 cursor-pointer"
+              >
+                Generate plan
+              </button>
+            </Link>
           </section>
 
           <section className="rounded-lg border border-border bg-card p-5 shadow-sm">
