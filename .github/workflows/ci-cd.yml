@@ -47,3 +47,5 @@ jobs:
           tags: catalyst-app:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secret-files: |
+            env_file=.env.example

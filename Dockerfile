@@ -16,11 +16,11 @@ COPY . .
 # Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Load environment variables from .env file during build
+# Load environment variables from .env file during build if present
 RUN --mount=type=secret,id=env_file \
-  cat /run/secrets/env_file > .env && \
+  if [ -f /run/secrets/env_file ]; then cat /run/secrets/env_file > .env; fi && \
   npm run build && \
-  rm .env
+  rm -f .env
 
 # 3. Production image, copy all the files and run next
 FROM node:20-alpine AS runner
