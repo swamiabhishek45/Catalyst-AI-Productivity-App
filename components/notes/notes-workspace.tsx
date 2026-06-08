@@ -29,13 +29,22 @@ export function NotesWorkspace() {
         
         // Select the first active note by default if none selected
         if (data.length > 0) {
-          const activeNotes = data.filter((n: Note) => !n.isTrash);
-          if (activeNotes.length > 0) {
-            setSelectedNoteId(activeNotes[0].id);
-            activeNoteIdRef.current = activeNotes[0].id;
+          const params = new URLSearchParams(window.location.search);
+          const noteIdParam = params.get("noteId");
+          if (noteIdParam && data.some((n: Note) => n.id === noteIdParam)) {
+            setSelectedNoteId(noteIdParam);
+            activeNoteIdRef.current = noteIdParam;
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, "", newUrl);
           } else {
-            setSelectedNoteId(data[0].id);
-            activeNoteIdRef.current = data[0].id;
+            const activeNotes = data.filter((n: Note) => !n.isTrash);
+            if (activeNotes.length > 0) {
+              setSelectedNoteId(activeNotes[0].id);
+              activeNoteIdRef.current = activeNotes[0].id;
+            } else {
+              setSelectedNoteId(data[0].id);
+              activeNoteIdRef.current = data[0].id;
+            }
           }
         }
       }

@@ -222,6 +222,27 @@ export function CalendarWorkspace() {
     }
   }, [toastMessage]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get("action");
+      if (action === "create-task" || action === "create-reminder") {
+        const type = action === "create-reminder" ? "reminder" : "task";
+        setDialogItem({
+          id: "",
+          title: "",
+          notes: "",
+          date: todayKey,
+          time: "",
+          type,
+          category: "focus",
+        });
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
+  }, [todayKey]);
+
   const combinedItems = useMemo(() => {
     const syncedKanban = kanbanTasks
       .filter((t) => t.syncToCalendar && t.dueDate)
