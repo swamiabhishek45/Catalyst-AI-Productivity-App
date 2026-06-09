@@ -201,16 +201,16 @@ export function CalendarWorkspace() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedCal = localStorage.getItem("canvasdesk_calendar_items");
+    const savedCal = localStorage.getItem("catalyst_calendar_items");
     if (savedCal) {
       setItems(JSON.parse(savedCal));
     } else {
       const starter = createStarterItems(today);
       setItems(starter);
-      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(starter));
+      localStorage.setItem("catalyst_calendar_items", JSON.stringify(starter));
     }
 
-    const savedKanban = localStorage.getItem("canvasdesk_kanban_tasks");
+    const savedKanban = localStorage.getItem("catalyst_kanban_tasks");
     if (savedKanban) {
       setKanbanTasks(JSON.parse(savedKanban));
     }
@@ -313,7 +313,7 @@ export function CalendarWorkspace() {
       const updated = exists
         ? current.map((entry) => (entry.id === normalized.id ? normalized : entry))
         : [...current, normalized];
-      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(updated));
+      localStorage.setItem("catalyst_calendar_items", JSON.stringify(updated));
       return updated;
     });
     setDialogItem(null);
@@ -326,7 +326,7 @@ export function CalendarWorkspace() {
         t.id === realId ? { ...t, dueDate: date || "" } : t
       );
       setKanbanTasks(updatedKanban);
-      localStorage.setItem("canvasdesk_kanban_tasks", JSON.stringify(updatedKanban));
+      localStorage.setItem("catalyst_kanban_tasks", JSON.stringify(updatedKanban));
       
       const movedTask = kanbanTasks.find((t) => t.id === realId);
       if (movedTask) {
@@ -337,7 +337,7 @@ export function CalendarWorkspace() {
 
     setItems((current) => {
       const updated = current.map((item) => (item.id === itemId ? { ...item, date } : item));
-      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(updated));
+      localStorage.setItem("catalyst_calendar_items", JSON.stringify(updated));
       return updated;
     });
   };

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       .orderBy(desc(notes.updatedAt));
 
     // 2. Prepare System Prompt
-    const systemPrompt = `You are "Antigravity", the friendly, cozy, and highly capable AI assistant built into CanvasDesk, a productivity workspace that combines text editing (like Notion) with spatial thinking (like Miro/whiteboards) and calendar/kanban planning.
+    const systemPrompt = `You are "Antigravity", the friendly, cozy, and highly capable AI assistant built into Catalyst, a productivity workspace that combines text editing (like Notion) with spatial thinking (like Miro/whiteboards) and calendar/kanban planning.
 
 You act as the central command center for the user's workspace.
 Current User Clerk ID: ${userId}

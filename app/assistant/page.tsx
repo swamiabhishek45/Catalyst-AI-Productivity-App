@@ -281,7 +281,7 @@ export default function AssistantPage() {
 
         case "ADD_CALENDAR_TASK": {
           // Read from LocalStorage
-          const savedCal = localStorage.getItem("canvasdesk_calendar_items");
+          const savedCal = localStorage.getItem("catalyst_calendar_items");
           const items = savedCal ? JSON.parse(savedCal) : [];
 
           const newItem = {
@@ -295,7 +295,7 @@ export default function AssistantPage() {
           };
 
           items.push(newItem);
-          localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(items));
+          localStorage.setItem("catalyst_calendar_items", JSON.stringify(items));
 
           updateActionStatus(messageId, "executed", newItem);
           showToast(`Scheduled "${payload.title}" on calendar!`, "success");
@@ -309,8 +309,8 @@ export default function AssistantPage() {
           } else {
             document.documentElement.classList.remove("dark");
           }
-          localStorage.setItem("canvasdesk_theme", theme);
-          localStorage.setItem("canvasdesk_user_settings", JSON.stringify({ theme }));
+          localStorage.setItem("catalyst_theme", theme);
+          localStorage.setItem("catalyst_user_settings", JSON.stringify({ theme }));
 
           // Dispatch standard event
           window.dispatchEvent(new Event("theme-changed"));
@@ -480,10 +480,10 @@ export default function AssistantPage() {
                 const isDark = document.documentElement.classList.contains("dark");
                 if (isDark) {
                   document.documentElement.classList.remove("dark");
-                  localStorage.setItem("canvasdesk_theme", "light");
+                  localStorage.setItem("catalyst_theme", "light");
                 } else {
                   document.documentElement.classList.add("dark");
-                  localStorage.setItem("canvasdesk_theme", "dark");
+                  localStorage.setItem("catalyst_theme", "dark");
                 }
               }}
               title="Toggle Theme"

@@ -1,8 +1,8 @@
-# CanvasDesk Cozy UI Theme
+# Catalyst Cozy UI Theme
 
 ## Brand Mood
 
-CanvasDesk should feel cozy, modern, clean, and fresh. The product combines structured work like Notion with spatial thinking like Miro, so screens should feel calm enough for deep work and bright enough for creative momentum.
+Catalyst should feel cozy, modern, clean, and fresh. The product combines structured work like Notion with spatial thinking like Miro, so screens should feel calm enough for deep work and bright enough for creative momentum.
 
 ## Color Palette
 

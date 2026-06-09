@@ -368,7 +368,7 @@ export function SettingsWorkspace() {
       2
     );
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `canvasdesk_settings_${new Date().toISOString().slice(0, 10)}.json`;
+    const exportFileDefaultName = `catalyst_settings_${new Date().toISOString().slice(0, 10)}.json`;
 
     const linkElement = document.createElement("a");
     linkElement.setAttribute("href", dataUri);
@@ -471,7 +471,7 @@ export function SettingsWorkspace() {
                   <User className="size-5 text-primary" /> Profile details
                 </CardTitle>
                 <CardDescription>
-                  Configure your personal information displayed on CanvasDesk.
+                  Configure your personal information displayed on Catalyst.
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSaveProfile}>
@@ -1159,7 +1159,7 @@ export function SettingsWorkspace() {
                     variant="destructive"
                     size="sm"
                     onClick={() => {
-                      if (confirm("WARNING: Are you absolutely sure you want to permanently delete your CanvasDesk workspace? This action is irreversible.")) {
+                      if (confirm("WARNING: Are you absolutely sure you want to permanently delete your Catalyst workspace? This action is irreversible.")) {
                         alert("Account deletion requested. Please contact workspace support for final processing.");
                       }
                     }}

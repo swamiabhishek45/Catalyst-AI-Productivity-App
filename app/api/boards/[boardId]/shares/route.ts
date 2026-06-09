@@ -60,7 +60,7 @@ export async function GET(
 
     // Add owner
     collaborators.push({
-      email: ownerProfile[0]?.email || "owner@canvasdesk.com",
+      email: ownerProfile[0]?.email || "owner@catalyst.com",
       name: ownerProfile[0]?.name || "Board Owner",
       imageUrl: ownerProfile[0]?.imageUrl || "",
       isOwner: true,

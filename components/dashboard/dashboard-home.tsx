@@ -159,12 +159,12 @@ export function DashboardHome() {
         setSettings(settingsData);
 
         // Fetch local storage client-side items
-        const savedCal = localStorage.getItem("canvasdesk_calendar_items");
+        const savedCal = localStorage.getItem("catalyst_calendar_items");
         if (savedCal) {
           setCalendarItems(JSON.parse(savedCal));
         }
 
-        const savedKanban = localStorage.getItem("canvasdesk_kanban_tasks");
+        const savedKanban = localStorage.getItem("catalyst_kanban_tasks");
         if (savedKanban) {
           setKanbanTasks(JSON.parse(savedKanban));
         }
@@ -215,7 +215,7 @@ export function DashboardHome() {
         return t;
       });
       setKanbanTasks(updated);
-      localStorage.setItem("canvasdesk_kanban_tasks", JSON.stringify(updated));
+      localStorage.setItem("catalyst_kanban_tasks", JSON.stringify(updated));
     } else {
       const updated = calendarItems.map((item) => {
         if (item.id === taskId) {
@@ -224,7 +224,7 @@ export function DashboardHome() {
         return item;
       });
       setCalendarItems(updated);
-      localStorage.setItem("canvasdesk_calendar_items", JSON.stringify(updated));
+      localStorage.setItem("catalyst_calendar_items", JSON.stringify(updated));
     }
   };
 
@@ -838,7 +838,7 @@ export function DashboardHome() {
         <aside className="space-y-6">
           
           {/* AI Insights Section */}
-          <section className="rounded-xl border border-violet-200 dark:border-violet-850 bg-gradient-to-br from-violet-50/70 via-indigo-50/50 to-transparent p-5 shadow-sm dark:from-violet-950/10 dark:via-indigo-950/5">
+          <section className="rounded-xl border dark:border-violet-850 bg-gradient-to-br from-violet-50/70 via-indigo-50/50 to-transparent p-5 shadow-sm dark:from-violet-950/10 dark:via-indigo-950/5">
             <div className="flex items-center gap-2 mb-4">
               <div className="grid size-8 place-items-center rounded-lg bg-violet-600 text-white shadow-sm">
                 <Bot className="size-4.5" />

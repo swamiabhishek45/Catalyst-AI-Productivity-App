@@ -173,7 +173,7 @@ export function TemplateBuilderDashboard() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">AI Template Builder</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Describe your productivity workflow or application idea below. CanvasDesk AI will design and render a custom single-page tracker, logger, or planner widget tailored precisely to your needs.
+            Describe your productivity workflow or application idea below. Catalyst AI will design and render a custom single-page tracker, logger, or planner widget tailored precisely to your needs.
           </p>
         </div>
 

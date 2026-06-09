@@ -172,7 +172,7 @@ const INITIAL_PAGES: Page[] = [
     description: "Product Requirements Document covering user onboarding, authentication service, and workspace state synchronization.",
     commentsCount: 15,
     linkedTasksCount: 5,
-    content: "## Product Requirements Document (PRD)\n\n### 1. Executive Summary\nCanvasDesk is designed to combine hierarchical Notion-like organization with whiteboard visualization tools.\n\n### 2. Feature Requirements\n- Spaces function as folders.\n- Pages function as editable documents with template support.",
+    content: "## Product Requirements Document (PRD)\n\n### 1. Executive Summary\nCatalyst is designed to combine hierarchical Notion-like organization with whiteboard visualization tools.\n\n### 2. Feature Requirements\n- Spaces function as folders.\n- Pages function as editable documents with template support.",
   },
   {
     id: "page-work-5",
@@ -186,7 +186,7 @@ const INITIAL_PAGES: Page[] = [
     description: "Useful reference documents, Figma mockups, API definitions, and staging environment credentials.",
     commentsCount: 1,
     linkedTasksCount: 0,
-    content: "## Reference Hub\n\n- Figma Design: [Link to CanvasDesk Prototypes]\n- API Endpoint: `https://api.canvasdesk.studio/v1`\n- Staging URL: `https://staging.canvasdesk.studio`",
+    content: "## Reference Hub\n\n- Figma Design: [Link to Catalyst Prototypes]\n- API Endpoint: `https://api.catalyst.studio/v1`\n- Staging URL: `https://staging.catalyst.studio`",
   },
   // For Personal
   {
@@ -274,30 +274,39 @@ export function SpacesWorkspace() {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedSpaces = localStorage.getItem("canvasdesk_spaces");
-    const savedPages = localStorage.getItem("canvasdesk_pages");
+    let savedSpaces = localStorage.getItem("catalyst_spaces");
+    let savedPages = localStorage.getItem("catalyst_pages");
+
+    // Migration fallback
+    if (!savedSpaces && !savedPages) {
+      savedSpaces = localStorage.getItem("canvasdesk_spaces");
+      savedPages = localStorage.getItem("canvasdesk_pages");
+    }
 
     if (savedSpaces && savedPages) {
       setSpaces(JSON.parse(savedSpaces));
       setPages(JSON.parse(savedPages));
+      // Save it using the new keys to complete migration
+      localStorage.setItem("catalyst_spaces", savedSpaces);
+      localStorage.setItem("catalyst_pages", savedPages);
     } else {
       // Seed default data
       setSpaces(INITIAL_SPACES);
       setPages(INITIAL_PAGES);
-      localStorage.setItem("canvasdesk_spaces", JSON.stringify(INITIAL_SPACES));
-      localStorage.setItem("canvasdesk_pages", JSON.stringify(INITIAL_PAGES));
+      localStorage.setItem("catalyst_spaces", JSON.stringify(INITIAL_SPACES));
+      localStorage.setItem("catalyst_pages", JSON.stringify(INITIAL_PAGES));
     }
   }, []);
 
   // Save to localStorage whenever spaces/pages change
   const saveSpaces = (newSpaces: Space[]) => {
     setSpaces(newSpaces);
-    localStorage.setItem("canvasdesk_spaces", JSON.stringify(newSpaces));
+    localStorage.setItem("catalyst_spaces", JSON.stringify(newSpaces));
   };
 
   const savePages = (newPages: Page[]) => {
     setPages(newPages);
-    localStorage.setItem("canvasdesk_pages", JSON.stringify(newPages));
+    localStorage.setItem("catalyst_pages", JSON.stringify(newPages));
   };
 
   // Find active records
@@ -563,7 +572,7 @@ export function SpacesWorkspace() {
         break;
       case "share":
         // Simple visual share alert
-        alert(`Sharing settings opened for page: "${pageToAct.title}". Link generated: https://canvasdesk.studio/shared/page-${pageToAct.id}`);
+        alert(`Sharing settings opened for page: "${pageToAct.title}". Link generated: https://catalyst.studio/shared/page-${pageToAct.id}`);
         break;
       case "export":
         // Export file as simple download
@@ -744,8 +753,10 @@ export function SpacesWorkspace() {
     if (confirm("Reset layout to default workspace data? This will clear all your custom changes.")) {
       setSpaces(INITIAL_SPACES);
       setPages(INITIAL_PAGES);
-      localStorage.setItem("canvasdesk_spaces", JSON.stringify(INITIAL_SPACES));
-      localStorage.setItem("canvasdesk_pages", JSON.stringify(INITIAL_PAGES));
+      localStorage.setItem("catalyst_spaces", JSON.stringify(INITIAL_SPACES));
+      localStorage.setItem("catalyst_pages", JSON.stringify(INITIAL_PAGES));
+      localStorage.removeItem("canvasdesk_spaces");
+      localStorage.removeItem("canvasdesk_pages");
       setView("spaces");
       setActiveSpaceId(null);
       setActivePageId(null);

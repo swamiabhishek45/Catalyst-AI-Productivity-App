@@ -112,7 +112,7 @@ export function DashboardLayout() {
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">CanvasDesk</p>
+                <p className="truncate text-sm font-semibold">Catalyst</p>
                 <p className="truncate text-xs text-muted-foreground">
                   Think, plan, ship
                 </p>
