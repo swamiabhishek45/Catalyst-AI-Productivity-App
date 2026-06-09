@@ -198,7 +198,7 @@ export function AppShell({
             )}
           </button>
 
-          <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
+          <nav className="flex flex-1 flex-col gap-4 overflow-y-auto scrollbar-none">
             {navGroups.map((group) => (
               <div key={group.label}>
                 {!collapsed && (

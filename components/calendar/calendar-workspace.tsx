@@ -507,14 +507,14 @@ export function CalendarWorkspace() {
                     >
                       {date.getDate()}
                     </span>
-                    <span className="rounded bg-background px-1.5 py-1 text-[11px] font-medium text-muted-foreground opacity-0 transition group-hover:opacity-100">
+                    <span className="rounded bg-background px-1.5 py-1 text-[11px] font-medium text-muted-foreground opacity-0 transition group-hover:opacity-100 cursor-pointer">
                       Add
                     </span>
                   </div>
 
                   <div
                     className={cn(
-                      "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5 scrollbar-thin",
+                      "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5 scrollbar-none",
                       view === "month" ? "max-h-[96px]" : "max-h-[480px]"
                     )}
                     onClick={(e) => e.stopPropagation()}
@@ -625,12 +625,10 @@ function CalendarTask({
       type="button"
       className={cn(
         "min-w-0 rounded-md border px-2 py-1.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5 flex flex-col gap-1 w-full",
-        category.chip,
-        category.border,
         item.completed && "opacity-50 line-through text-muted-foreground",
-        isOverdue && "border-destructive/40 bg-destructive/5 text-destructive opacity-50"
-        "min-w-0 rounded-md border px-2 py-1.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5",
-        item.isKanban
+        isOverdue
+          ? "border-destructive/40 bg-destructive/5 text-destructive opacity-50"
+          : item.isKanban
           ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100/70"
           : cn(category.chip, category.border)
       )}
@@ -655,8 +653,7 @@ function CalendarTask({
             }}
             className="size-3.5 shrink-0 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
           />
-      <span className="flex min-w-0 items-center gap-1.5">
-        {item.isKanban ? (
+        ) : item.isKanban ? (
           <Trello className="size-3.5 shrink-0 text-orange-500" />
         ) : item.type === "reminder" ? (
           <Bell className="size-3.5 shrink-0" />
