@@ -29,6 +29,7 @@ type CalendarItem = {
   time: string;
   type: ItemType;
   category: CategoryId;
+  completed?: boolean;
 };
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -206,6 +207,7 @@ export function CalendarWorkspace() {
   const openDialog = (date: string | null, item?: CalendarItem) => {
     setDialogItem(item ?? emptyForm(date));
   };
+  
 
   const saveItem = (item: CalendarItem, saveAsDraft = false) => {
     const normalized = {
@@ -232,6 +234,19 @@ export function CalendarWorkspace() {
   const moveItemToDate = (itemId: string, date: string | null) => {
     setItems((current) =>
       current.map((item) => (item.id === itemId ? { ...item, date } : item)),
+    );
+  };
+
+  const deleteItem = (itemId: string) => {
+    setItems((current) => current.filter((item) => item.id !== itemId));
+    setDialogItem(null);
+  };
+
+  const toggleComplete = (itemId: string) => {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId ? { ...item, completed: !item.completed } : item,
+      ),
     );
   };
 
@@ -386,19 +401,22 @@ export function CalendarWorkspace() {
                     </span>
                   </div>
 
-                  <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-hidden">
-                    {itemsForDay.slice(0, view === "week" ? 12 : 4).map((item) => (
+                  <div
+                    className={cn(
+                      "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5 scrollbar-thin",
+                      view === "month" ? "max-h-[96px]" : "max-h-[480px]"
+                    )}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {itemsForDay.map((item) => (
                       <CalendarTask
                         key={item.id}
                         item={item}
                         onOpen={() => openDialog(item.date, item)}
+                        onToggleComplete={() => toggleComplete(item.id)}
+                        todayKey={todayKey}
                       />
                     ))}
-                    {itemsForDay.length > (view === "week" ? 12 : 4) && (
-                      <span className="text-xs text-muted-foreground">
-                        +{itemsForDay.length - (view === "week" ? 12 : 4)} more
-                      </span>
-                    )}
                   </div>
                 </div>
               );
@@ -452,6 +470,7 @@ export function CalendarWorkspace() {
                   key={item.id}
                   item={item}
                   onOpen={() => openDialog(null, item)}
+                  onToggleComplete={() => toggleComplete(item.id)}
                 />
               ))
             )}
@@ -464,6 +483,7 @@ export function CalendarWorkspace() {
           item={dialogItem}
           onClose={() => setDialogItem(null)}
           onSave={saveItem}
+          onDelete={deleteItem}
         />
       )}
     </>
@@ -473,20 +493,31 @@ export function CalendarWorkspace() {
 function CalendarTask({
   item,
   onOpen,
+  onToggleComplete,
+  todayKey,
 }: {
   item: CalendarItem;
   onOpen: () => void;
+  onToggleComplete: () => void;
+  todayKey: string;
 }) {
   const category = categories[item.category];
+  const isOverdue =
+    item.type === "task" &&
+    !item.completed &&
+    item.date !== null &&
+    item.date < todayKey;
 
   return (
     <button
       draggable
       type="button"
       className={cn(
-        "min-w-0 rounded-md border px-2 py-1.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5",
+        "min-w-0 rounded-md border px-2 py-1.5 text-left text-xs shadow-sm transition hover:-translate-y-0.5 flex flex-col gap-1 w-full",
         category.chip,
         category.border,
+        item.completed && "opacity-50 line-through text-muted-foreground",
+        isOverdue && "border-destructive/40 bg-destructive/5 text-destructive opacity-50"
       )}
       onClick={(event) => {
         event.stopPropagation();
@@ -497,15 +528,33 @@ function CalendarTask({
         event.dataTransfer.setData("text/plain", item.id);
       }}
     >
-      <span className="flex min-w-0 items-center gap-1.5">
-        {item.type === "reminder" ? (
+      <span className="flex min-w-0 items-center gap-1.5 w-full">
+        {item.type === "task" ? (
+          <input
+            type="checkbox"
+            checked={!!item.completed}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => {
+              event.stopPropagation();
+              onToggleComplete();
+            }}
+            className="size-3.5 shrink-0 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+          />
+        ) : item.type === "reminder" ? (
           <Bell className="size-3.5 shrink-0" />
         ) : (
           <GripVertical className="size-3.5 shrink-0" />
         )}
-        <span className="truncate font-semibold">{item.title}</span>
+        <span className={cn("truncate font-semibold flex-1", item.completed && "line-through")}>
+          {item.title}
+        </span>
       </span>
-      {item.time && <span className="mt-1 block text-[11px] opacity-80">{item.time}</span>}
+      <div className="flex w-full items-center justify-between gap-1 text-[11px] opacity-80">
+        {item.time && <span>{item.time}</span>}
+        {isOverdue && (
+          <span className="font-bold text-destructive animate-pulse ml-auto">Overdue</span>
+        )}
+      </div>
     </button>
   );
 }
@@ -513,9 +562,11 @@ function CalendarTask({
 function DraftTask({
   item,
   onOpen,
+  onToggleComplete,
 }: {
   item: CalendarItem;
   onOpen: () => void;
+  onToggleComplete: () => void;
 }) {
   const category = categories[item.category];
 
@@ -526,15 +577,31 @@ function DraftTask({
       className={cn(
         "w-full rounded-lg border bg-background p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:bg-accent/45",
         category.border,
+        item.completed && "opacity-50"
       )}
       onClick={onOpen}
       onDragStart={(event) => event.dataTransfer.setData("text/plain", item.id)}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
-            <span className={cn("size-2.5 shrink-0 rounded-full", category.dot)} />
-            <span className="truncate text-sm font-semibold">{item.title}</span>
+            {item.type === "task" ? (
+              <input
+                type="checkbox"
+                checked={!!item.completed}
+                onClick={(event) => event.stopPropagation()}
+                onChange={(event) => {
+                  event.stopPropagation();
+                  onToggleComplete();
+                }}
+                className="size-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              />
+            ) : (
+              <span className={cn("size-2.5 shrink-0 rounded-full", category.dot)} />
+            )}
+            <span className={cn("truncate text-sm font-semibold flex-1", item.completed && "line-through text-muted-foreground")}>
+              {item.title}
+            </span>
           </div>
           {item.notes && (
             <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
@@ -560,10 +627,12 @@ function TaskDialog({
   item,
   onClose,
   onSave,
+  onDelete,
 }: {
   item: CalendarItem;
   onClose: () => void;
   onSave: (item: CalendarItem, saveAsDraft?: boolean) => void;
+  onDelete?: (itemId: string) => void;
 }) {
   const [form, setForm] = useState(item);
 
@@ -687,6 +756,18 @@ function TaskDialog({
             ))}
           </div>
 
+          {form.type === "task" && (
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background/65 p-3 hover:bg-accent cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!form.completed}
+                onChange={(event) => setForm({ ...form, completed: event.target.checked })}
+                className="size-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              />
+              <span className="text-sm font-medium">Mark as Completed</span>
+            </label>
+          )}
+
           <label className="grid gap-2">
             <span className="text-sm font-medium">Notes</span>
             <textarea
@@ -706,9 +787,23 @@ function TaskDialog({
           >
             Save Draft
           </Button>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
+          {form.id ? (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                if (onDelete && form.id) {
+                  onDelete(form.id);
+                }
+              }}
+            >
+              {form.date ? "Delete Task" : "Delete Draft"}
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          )}
           <Button type="submit">{form.date ? "Schedule Task" : "Save Draft"}</Button>
         </div>
       </form>
